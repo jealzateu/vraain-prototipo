@@ -67,13 +67,14 @@ export class FullScreenComponent implements OnInit {
       })
     );
 
-    this.addModel([-75.920929433568, 45.28709674822362], 'assets/models3D/firestation1.glb', this.map, '3d-model1');
-    this.addModel([-75.921229433568, 45.28719674822362], 'assets/models3D/Hotel(3star).glb', this.map, '3d-model2');
-    this.addModel([-75.920629433568, 45.28700674822362], 'assets/models3D/Restaurant.glb', this.map, '3d-model3');
+    // this.addModel([-75.920929433568, 45.28709674822362], 'assets/models3D/firestation1.glb', '3d-model1');
+    // this.addModel([-75.921229433568, 45.28719674822362], 'assets/models3D/Hotel(3star).glb', '3d-model2');
+    // this.addModel([-75.920629433568, 45.28700674822362], 'assets/models3D/Restaurant.glb', '3d-model3');
+    // this.addModel([-75.921529433568, 45.28729674822362], 'assets/models3D/pizzashop.glb', '3d-model4');
 
   }
 
-  addModel(mod: any[], model: string, map: any, id: string): any {
+  addModel(mod: any[], model: string, id: string): any {
 
     this.modelOrigin = mod;
     const modelAltitude = 0;
@@ -81,6 +82,7 @@ export class FullScreenComponent implements OnInit {
     let longitude: number = mod[0];
     let latitude: number = mod[1];
     let rotate = 0;
+    const mapa = this.map;
 
     let modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
       this.modelOrigin,
@@ -95,7 +97,8 @@ export class FullScreenComponent implements OnInit {
       rotateX: modelRotate[0],
       rotateY: modelRotate[1],
       rotateZ: modelRotate[2],
-      scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
+      scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+      idMT: id
     };
 
     // const THREE = window.THREE;
@@ -177,18 +180,18 @@ export class FullScreenComponent implements OnInit {
         camera.projectionMatrix = m.multiply(l);
         renderer.resetState();
         renderer.render(scene, camera);
-        map.triggerRepaint();
+        mapa.triggerRepaint();
       }
     };
+    // customLayer.onAdd();
 
 
     // tslint:disable-next-line:only-arrow-functions
-    map.on('style.load', function(): any {
-      map.getCanvas().addEventListener(
+    mapa.on('style.load', function(): any {
+      mapa.getCanvas().addEventListener(
         'keydown',
         (e: any) => {
           if (e.keyCode === 65) {
-
             rotate += 0.5;
             modelRotate = [Math.PI / 2, rotate, 0];
 
@@ -198,22 +201,25 @@ export class FullScreenComponent implements OnInit {
             );
 
             // transformation parameters to position, rotate and scale the 3D model onto the map
-            modelTransform = {
-              translateX: modelAsMercatorCoordinate.x,
-              translateY: modelAsMercatorCoordinate.y,
-              translateZ: modelAsMercatorCoordinate.z,
-              rotateX: modelRotate[0],
-              rotateY: modelRotate[1],
-              rotateZ: modelRotate[2],
-              scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
-            };
+            if (modelTransform.idMT === '3d-model1') {
+              modelTransform = {
+                translateX: modelAsMercatorCoordinate.x,
+                translateY: modelAsMercatorCoordinate.y,
+                translateZ: modelAsMercatorCoordinate.z,
+                rotateX: modelRotate[0],
+                rotateY: modelRotate[1],
+                rotateZ: modelRotate[2],
+                scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+                idMT: id
+              };
+            }
           }
         });
-      map.addLayer(customLayer, 'waterway-label');
+      mapa.addLayer(customLayer, 'waterway-label');
     });
 
 
-    map.on('click',
+    mapa.on('click',
       (e: { lngLat: any; }) => {
 
       const { lng, lat } = e.lngLat;
@@ -226,15 +232,18 @@ export class FullScreenComponent implements OnInit {
       );
 
       // transformation parameters to position, rotate and scale the 3D model onto the map
-      modelTransform = {
-        translateX: modelAsMercatorCoordinate.x,
-        translateY: modelAsMercatorCoordinate.y,
-        translateZ: modelAsMercatorCoordinate.z,
-        rotateX: modelRotate[0],
-        rotateY: modelRotate[1],
-        rotateZ: modelRotate[2],
-        scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
-      };
+      if (modelTransform.idMT === '3d-model1') {
+        modelTransform = {
+          translateX: modelAsMercatorCoordinate.x,
+          translateY: modelAsMercatorCoordinate.y,
+          translateZ: modelAsMercatorCoordinate.z,
+          rotateX: modelRotate[0],
+          rotateY: modelRotate[1],
+          rotateZ: modelRotate[2],
+          scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+          idMT: id
+        };
+        }
     });
 
   }
