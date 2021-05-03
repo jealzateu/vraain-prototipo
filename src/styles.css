@@ -1,0 +1,15 @@
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+
+app-menu {
+    top: 20px;
+    left: 20px;
+    z-index: 99999;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
