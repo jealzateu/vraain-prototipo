@@ -9,6 +9,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { MaterialModule } from './material.module';
 import { MenuConstruccionComponent } from './components/menu-construccion/menu-construccion.component';
 import { MainDialogComponent } from './mapas/pages/full-screen/mainDialog/mainDialog';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { MainDialogComponent } from './mapas/pages/full-screen/mainDialog/mainDi
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MaterialModule
+    MaterialModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

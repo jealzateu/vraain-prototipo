@@ -1,4 +1,18 @@
 <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css" type="text/css">
-<button (click)="addModel([-75.921229433568, 45.28719674822362], 'assets/models3D/Hotel(3star).glb', '3d-model2')">Agregar hotel</button>
-<button (click)="addModel([-75.920629433568, 45.28700674822362], 'assets/models3D/Restaurant.glb', '3d-model3')">Agregar restaurante</button>
+<div>
+  <button mat-button color="primary" (click)="callAddModel([-75.920929433568, 45.28709674822362], 'assets/models3D/Firestation.glb', '3d-model1')">Agregar firestation</button>
+  <button mat-button color="primary" (click)="callAddModel([-75.920629433568, 45.28700674822362], 'assets/models3D/Restaurant.glb', '3d-model3')">Agregar restaurante</button>
+  <button mat-button color="primary" (click)="move()">Mover y Rotar</button>
+</div>
+<div *ngIf="mover">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label for="listaModelos" style="color: black">Modelos disponibles</label>
+    <select formControlName="listaModelos" id="listaModelos">
+      <option *ngFor="let lista of listaModelos; let i = index" [value]="listaModelos[i].name">
+        {{listaModelos[i].name}}
+      </option>
+    </select>
+    <button mat-button color="primary">Elegir</button>
+  </form>
+</div>
 <div id="mapa"></div>

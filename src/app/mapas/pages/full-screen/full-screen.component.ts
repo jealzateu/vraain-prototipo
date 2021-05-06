@@ -8,6 +8,7 @@ import * as THREE from 'three';
 // @ts-ignore
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import {MainDialogComponent} from './mainDialog/mainDialog';
+import {FormBuilder, FormGroup, FormArray, FormControl, ValidatorFn, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-full-screen',
@@ -32,6 +33,15 @@ export class FullScreenComponent implements OnInit {
 
   public map: any;
   public modelOrigin: any;
+  public mods: any[] = [];
+  public models: any[] = [];
+  public ids: any[] = [];
+  public lar = 1;
+  public listaModelos: any[] = [];
+  public mover = false;
+  public idActual = '';
+
+  form: FormGroup;
 
   public options: string[] = [
     'Gobierno electrónico', 'Seguridad', 'Salud',
@@ -41,8 +51,13 @@ export class FullScreenComponent implements OnInit {
   ];
 
   constructor(
-    public dialog: MatDialog
-  ) { }
+    public dialog: MatDialog,
+    private formBuilder: FormBuilder
+  ) {
+    this.form = this.formBuilder.group({
+      listaModelos: ['']
+    });
+  }
 
   ngOnInit(): void {
     this.dialog.open(MainDialogComponent, {
@@ -51,13 +66,7 @@ export class FullScreenComponent implements OnInit {
       }
     });
 
-    this.map = new mapboxgl.Map({
-      container: 'mapa',
-      style: 'mapbox://styles/jealzateu/cknepa4cg3ry217o4hda2kltp',
-      center: [-75.921029433568, 45.28719674822362],
-      zoom: 18,
-      antialias: true
-    });
+    this.cargarMapa();
 
     // Add the control to the map.
     this.map.addControl(
@@ -66,12 +75,79 @@ export class FullScreenComponent implements OnInit {
         mapboxgl
       })
     );
+  }
 
-    // this.addModel([-75.920929433568, 45.28709674822362], 'assets/models3D/firestation1.glb', '3d-model1');
-    // this.addModel([-75.921229433568, 45.28719674822362], 'assets/models3D/Hotel(3star).glb', '3d-model2');
-    // this.addModel([-75.920629433568, 45.28700674822362], 'assets/models3D/Restaurant.glb', '3d-model3');
-    // this.addModel([-75.921529433568, 45.28729674822362], 'assets/models3D/pizzashop.glb', '3d-model4');
+  getList(): any[] {
+    const nombres = [];
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < this.models.length; i++) {
+      nombres.push({name: this.models[i].substring(16, this.models[i].length - 4)});
+    }
 
+    return nombres;
+  }
+
+  submit(): void {
+    this.models.filter(modelo =>
+      {
+        if (modelo.substring(16, modelo.length - 4) === this.form.value.listaModelos){
+          const index = this.models.indexOf(modelo);
+          this.idActual = this.ids[index];
+          this.cargarMapa();
+          this.cargarModelos();
+        }
+      },
+    );
+  }
+
+  move(): void {
+    this.mover = true;
+
+  }
+
+  callAddModel(mod: any[], model: string, id: string): any {
+
+    this.mods.push(mod);
+    this.models.push(model);
+    this.ids.push(id);
+
+    if (this.ids.length === 1) {
+      this.cargarMapa();
+      this.listaModelos = this.getList();
+    }else{
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = this.ids.length - 1; i >= 0; i--) {
+        if (this.ids.indexOf(this.ids[i]) !== i) {
+          this.ids.splice(i, 1);
+          this.models.splice(i, 1);
+          this.mods.splice(i, 1);
+        }
+      }
+    }
+
+    if (this.lar !== this.ids.length) {
+      this.lar = this.ids.length;
+      this.cargarMapa();
+      this.listaModelos = this.getList();
+    }
+
+    this.cargarModelos();
+  }
+
+  cargarMapa(): void {
+    this.map = new mapboxgl.Map({
+      container: 'mapa',
+      style: 'mapbox://styles/jealzateu/cknepa4cg3ry217o4hda2kltp',
+      center: [-75.921029433568, 45.28719674822362],
+      zoom: 18,
+      antialias: true
+    });
+  }
+
+  cargarModelos(): void {
+    for (let i = 0; i < this.models.length; i++) {
+      this.addModel(this.mods[i], this.models[i], this.ids[i]);
+    }
   }
 
   addModel(mod: any[], model: string, id: string): any {
@@ -126,7 +202,6 @@ export class FullScreenComponent implements OnInit {
 
         // use the three.js GLTF loader to add the 3D model to the three.js scene
         // tslint:disable-next-line:prefer-const
-
         const loader = new GLTFLoader();
         loader.load(
           model,
@@ -183,15 +258,16 @@ export class FullScreenComponent implements OnInit {
         mapa.triggerRepaint();
       }
     };
-    // customLayer.onAdd();
 
 
+    const currentID = this.idActual;
     // tslint:disable-next-line:only-arrow-functions
     mapa.on('style.load', function(): any {
       mapa.getCanvas().addEventListener(
         'keydown',
         (e: any) => {
           if (e.keyCode === 65) {
+
             rotate += 0.5;
             modelRotate = [Math.PI / 2, rotate, 0];
 
@@ -201,7 +277,7 @@ export class FullScreenComponent implements OnInit {
             );
 
             // transformation parameters to position, rotate and scale the 3D model onto the map
-            if (modelTransform.idMT === '3d-model1') {
+            if (modelTransform.idMT === currentID) {
               modelTransform = {
                 translateX: modelAsMercatorCoordinate.x,
                 translateY: modelAsMercatorCoordinate.y,
@@ -225,6 +301,7 @@ export class FullScreenComponent implements OnInit {
       const { lng, lat } = e.lngLat;
       longitude = lng;
       latitude = lat;
+      this.mods[this.ids.indexOf('3d-model1')] = [lng, lat];
 
       modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
         [lng, lat],
@@ -232,7 +309,7 @@ export class FullScreenComponent implements OnInit {
       );
 
       // transformation parameters to position, rotate and scale the 3D model onto the map
-      if (modelTransform.idMT === '3d-model1') {
+      if (modelTransform.idMT === currentID) {
         modelTransform = {
           translateX: modelAsMercatorCoordinate.x,
           translateY: modelAsMercatorCoordinate.y,
@@ -243,9 +320,8 @@ export class FullScreenComponent implements OnInit {
           scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
           idMT: id
         };
-        }
+      }
     });
-
   }
 
 }
